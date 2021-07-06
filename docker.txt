@@ -1,0 +1,37 @@
+#!/bin/bash
+
+dpkg -l | grep "docker.io"
+if [ $? = '0' ]
+then
+     echo "****Package is installed****"
+     sleep 1
+     echo "Docker reinstalling"
+     sleep 1
+     sudo apt-get purge -y docker.io
+     echo "Docker package removed and now installing"
+     sleep 1
+     sudo apt install -y docker.io
+     echo -e "****Package installed & Docker Started****\nWrite docker name: "
+     read dname
+     docker run -d --name $dname -p 8080:80 httpd
+     echo "$dname - named container is running"
+     sleep 2
+    # export DISPLAY=:0.0
+     ip=`hostname --ip-address`
+     firefox --new-window http://$ip:8080 &
+else
+    echo "****Package is not installed****"
+    sleep 1
+    echo "****Docker installing****"
+    sudo apt install -y docker.io
+    echo "****Package installed & Docker Started****"
+    docker stop $(docker ps -a -q) > /dev/null
+    docker rm $(docker ps -a -q) > /dev/null
+    echo -e "****Package installed & Docker Started****\nWrite docker container name: "
+    read dname
+    docker run -d --name $dname -p 8080:80 httpd
+    echo "Container is running"
+    docker ps
+    ip=`hostname --ip-address`
+    firefox --new-window http://$ip:8080 &
+fi
